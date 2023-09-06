@@ -48,6 +48,15 @@ export type AuditLoggerOptions = {
      * @default false
      */
     captureState: boolean,
+    /**
+     * Parse schemas to apply to the audit objects.
+     * 
+    */
+    schemas?: {
+        save?: any[],
+        find?: any[],
+        delete?: any[],
+    };
 }
 
 export type AuditObjectSaveOptions = {
