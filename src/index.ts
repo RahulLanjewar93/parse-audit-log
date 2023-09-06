@@ -11,6 +11,47 @@ const defaultOptions: AuditLoggerOptions = {
   captureState: false,
 }
 
+const defaultClassLevelPermissions: JSONSchema['classLevelPermissions'] = {
+  get: {
+    '*': true,
+  },
+  find: {
+    '*': true,
+  },
+  create: {
+    '*': true,
+  },
+  update: {
+    '*': true,
+  },
+  delete: {
+    '*': true,
+  },
+  protectedFields: {},
+};
+
+const defaultFields: JSONSchema['fields'] = {
+  user: {
+    type: 'Pointer',
+    targetClass: '_User',
+  },
+  targetId: {
+    type: 'String',
+  },
+  targetAction: {
+    type: 'String',
+  },
+  previousState: {
+    type: 'Object'
+  },
+  currentState: {
+    type: 'Object'
+  },
+  master: {
+    type: 'Boolean'
+  }
+}
+
 export default class AuditLogger {
   private options: AuditLoggerOptions;
 
@@ -30,27 +71,8 @@ export default class AuditLogger {
     const result: JSONSchema[] = classNames.map(className => {
       return {
         className: `${this.options.prefix ?? ''}${className}${this.options.postfix ?? ''}`,
-        fields: {
-          user: {
-            type: 'Pointer',
-            targetClass: '_User',
-          },
-          targetId: {
-            type: 'String',
-          },
-          targetAction: {
-            type: 'String',
-          },
-          previousState: {
-            type: 'Object'
-          },
-          currentState: {
-            type: 'Object'
-          },
-          master: {
-            type: 'Boolean'
-          }
-        },
+        fields: defaultFields,
+        classLevelPermissions: defaultClassLevelPermissions,
       }
     })
 
