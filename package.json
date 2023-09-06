@@ -1,0 +1,17 @@
+{
+  "name": "parse-audit-log",
+  "version": "1.0.0",
+  "description": "Audit logger for parse server",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Rahul Lanjewar <rahul.lanjewar@vizmo.in>",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/parse": "^3.0.4"
+  },
+  "files": ["lib/**/*"],
+  "types": "lib/index.d.ts",
+  "main": "lib/index.js",
+  "module": "lib/index.js"
+}
