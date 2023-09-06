@@ -5,6 +5,11 @@ export declare type AuditLoggerOptions = {
     allowClientClassCreation: boolean;
     useMasterKey?: boolean;
     captureState: boolean;
+    schemas?: {
+        save?: any[];
+        find?: any[];
+        delete?: any[];
+    };
 };
 export declare type AuditObjectSaveOptions = {
     extraData?: {
