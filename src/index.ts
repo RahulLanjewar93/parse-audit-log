@@ -26,7 +26,7 @@ export default class AuditLogger {
     }
   }
 
-  getAuditClasses(classNames: string[]): JSONSchema[] {
+  getAuditSchemas(classNames: string[]): JSONSchema[] {
     const result: JSONSchema[] = classNames.map(className => {
       return {
         className: `${this.options.prefix ?? ''}${className}${this.options.postfix ?? ''}`,
