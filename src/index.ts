@@ -130,7 +130,6 @@ export default class AuditLogger {
 
     // Save the audit object.
     try {
-
       await auditObject.save(null, { useMasterKey: this.options.useMasterKey });
     } catch (err) {
       console.warn(err)
