@@ -1,12 +1,4 @@
-export interface SchemaOptions {
-    definitions: JSONSchema[];
-    strict: ?boolean;
-    deleteExtraFields: ?boolean;
-    recreateModifiedFields: ?boolean;
-    lockSchemas: ?boolean;
-    beforeMigration: ?() => void | Promise<void>;
-    afterMigration: ?() => void | Promise<void>;
-}
+import { Cloud } from "parse";
 
 export type FieldValueType =
     | 'String'
@@ -47,8 +39,6 @@ export type CLPOperation = 'find' | 'count' | 'get' | 'update' | 'create' | 'del
 // @Typescript 4.1+ // type CLPPermission = 'requiresAuthentication' | '*' |  `user:${string}` | `role:${string}`
 
 type CLPValue = { [key: string]: boolean };
-type CLPData = { [key: string]: CLPOperation[] };
-type CLPInterface = { [key: string]: CLPValue };
 
 export interface JSONSchema {
     className: ClassNameType;
@@ -64,4 +54,12 @@ export interface JSONSchema {
         addField?: CLPValue,
         protectedFields?: ProtectedFieldsInterface,
     };
+}
+
+declare namespace Parse {
+    namespace Cloud {
+        declare interface AfterFindRequest {
+            query: Parse.Query;
+        }
+    }
 }

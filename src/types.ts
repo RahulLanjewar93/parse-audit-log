@@ -49,20 +49,12 @@ export type AuditLoggerOptions = {
      */
     captureState: boolean,
     /**
-     * Parse schemas to apply to the audit objects.
+     * Parse classes to audit.
      * 
     */
-    schemas?: {
-        save?: any[],
-        find?: any[],
-        delete?: any[],
+    auditClasses?: {
+        save?: string[],
+        find?: string[],
+        delete?: string[],
     };
-}
-
-export type AuditObjectSaveOptions = {
-    // Extra data to add to the audit object, Will be added as a separate column.
-    extraData?: {
-        fieldName: string,
-        fieldValue: any,
-    }[];
 }
