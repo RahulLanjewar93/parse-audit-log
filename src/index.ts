@@ -126,7 +126,7 @@ export default class AuditLogger {
     auditObject.set('master', req.master);
     //@ts-ignore-next-line
     auditObject.set('query', req.query);
-    auditObject.set('queryResult', req.objects);
+    auditObject.set('queryResult', req.objects.map(o => o.attributes));
 
     // Save the audit object.
     await auditObject.save(null, { useMasterKey: this.options.useMasterKey });
