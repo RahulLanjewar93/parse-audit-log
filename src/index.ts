@@ -79,7 +79,7 @@ export default class AuditLogger {
     return result;
   }
 
-  async auditSaveRequest(req: any, auditObjectOptions?: AuditObjectSaveOptions) {
+  async auditSaveRequest(req: Parse.Cloud.AfterSaveRequest, auditObjectOptions?: AuditObjectSaveOptions) {
     const auditClassName = `${this.options.prefix ?? ''}${req.object.className}${this.options.postfix ?? ''}`;
     const action = req.original ? 'UPDATE' : 'CREATE';
     const auditObject = new this.options.parseClient.Object(auditClassName);
@@ -95,7 +95,7 @@ export default class AuditLogger {
     auditObject.set('targetAction', action);
     auditObject.set('user', req.user);
     auditObject.set('master', req.master);
-    auditObject.set('previousState', req.original.attributes);
+    auditObject.set('previousState', req.original?.attributes);
     auditObject.set('currentState', req.object.attributes);
 
 
