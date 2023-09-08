@@ -3,14 +3,18 @@
   "version": "1.0.0",
   "description": "Audit logger for parse server",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\"",
+    "build": "tsc"
   },
   "author": "Rahul Lanjewar <rahul.lanjewar@vizmo.in>",
   "license": "ISC",
   "devDependencies": {
-    "@types/parse": "^3.0.4"
+    "@types/parse": "^3.0.4",
+    "typescript": "^5.2.2"
   },
-  "files": ["lib/**/*"],
+  "files": [
+    "lib/**/*"
+  ],
   "types": "lib/index.d.ts",
   "main": "lib/index.js",
   "module": "lib/index.js"
