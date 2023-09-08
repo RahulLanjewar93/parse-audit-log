@@ -67,7 +67,7 @@ export default class AuditLogger {
   private options: AuditLoggerOptions;
 
   constructor(options: AuditLoggerOptions) {
-    this.options = Object.assign({}, options, defaultOptions);
+    this.options = Object.assign({}, defaultOptions, options);
     this.validateOptions();
   }
 
