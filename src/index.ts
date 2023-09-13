@@ -8,6 +8,7 @@ const defaultOptions: AuditLoggerOptions = {
   allowClientClassCreation: true,
   useMasterKey: false,
   captureState: false,
+  auditClasses:{find:[],save:[],delete:[]}
 }
 
 const defaultClassLevelPermissions: JSONSchema['classLevelPermissions'] = {
@@ -171,7 +172,7 @@ export default class AuditLogger {
     const objectClassName = req.object.className;
 
     // If the current class is not registered as audit class, do nothing.
-    if (this.options.auditClasses?.save && !this.options.auditClasses?.save.includes(objectClassName)) {
+    if (this.options.auditClasses?.delete && !this.options.auditClasses?.delete.includes(objectClassName)) {
       return;
     }
 
