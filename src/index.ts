@@ -5,10 +5,8 @@ const defaultOptions: AuditLoggerOptions = {
   prefix: "AUDIT_",
   postfix: undefined,
   parseClient: Parse,
-  allowClientClassCreation: true,
   useMasterKey: false,
-  captureState: false,
-  auditClasses:{find:[],save:[],delete:[]}
+  auditClasses: { find: [], save: [], delete: [] }
 }
 
 const defaultClassLevelPermissions: JSONSchema['classLevelPermissions'] = {

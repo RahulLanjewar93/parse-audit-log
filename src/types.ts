@@ -30,24 +30,11 @@ export type AuditLoggerOptions = {
      */
     parseClient?: any,
     /**
-     * This options tells the audit logger if `allowClientClassCreation` is true or false.
-     * If it's set to true, then we need to register the schemas with the parse server, or use masterKey.
-     * 
-     * @default true
-     */
-    allowClientClassCreation: boolean,
-    /**
      * Use masterKey while creating audit objects.
      * 
      * @default false
      */
     useMasterKey?: boolean,
-    /**
-     * This options tells the audit logger wether to log original and updated state.
-     * 
-     * @default false
-     */
-    captureState: boolean,
     /**
      * Parse classes to audit.
      * 
