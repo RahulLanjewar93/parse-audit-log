@@ -26,7 +26,6 @@ const defaultClassLevelPermissions: JSONSchema['classLevelPermissions'] = {
 };
 
 const defaultFields: JSONSchema['fields'] = {
-  // Common
   user: {
     type: 'Pointer',
     targetClass: '_User',
@@ -34,15 +33,21 @@ const defaultFields: JSONSchema['fields'] = {
   master: {
     type: 'Boolean'
   },
-  // Save/Delete
-  subject: {
-    type: 'Pointer'
-  },
   action: {
     type: 'String',
   },
   class: {
     type: 'String',
+  }
+}
+
+function getDefaultFields(className: string): JSONSchema['fields'] {
+  return {
+    ...defaultFields,
+    subject: {
+      type: 'Pointer',
+      targetClass: className
+    }
   }
 }
 
@@ -67,7 +72,7 @@ export default class AuditLogger {
     const result: JSONSchema[] = classNames.map(className => {
       return {
         className: `${this.options.prefix ?? ''}${className}${this.options.postfix ?? ''}`,
-        fields: defaultFields,
+        fields: getDefaultFields(className),
         classLevelPermissions: defaultClassLevelPermissions,
       }
     })
