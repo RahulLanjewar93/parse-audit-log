@@ -15,19 +15,22 @@ npm install parse-audit-logger
 
 ### Usage
 
-To use parse audit logger in your parse server, you need to create a `AuditLogger` object. Its recommended to create the auditLogger in a seperate file and imported it wherever required.
+To use parse audit logger in your parse server, you need initialize the auditLogger in your entry point..
 The constructor takes various options read about the [options] (#options) .
 
 ```ts
-// utils/audit-logger.ts
-export const auditLogger = new AuditLogger();
+// src/server.ts
+import { AuditLogger } from 'parse-audit-logger'
+AuditLogger.initialize({
+    /// can provide options. 
+})
 ```
 
-Now you can use `auditLogger.audit()` in your triggers to audit the request.
+Now you can use `AuditLogger.audit(req)` in your triggers to audit the request.
 
 ```ts
 // controllers/myClass.ts
-import { auditLogger } from '../utils/audit-logger'
+import { AuditLogger } from 'parse-audit-logger'
     
 Parse.Cloud.AfterSave('MyClass', async (req)=>{
     //Do your stuff here
@@ -35,7 +38,7 @@ Parse.Cloud.AfterSave('MyClass', async (req)=>{
     // .
     // .
 
-    await auditLogger.audit();
+    await AuditLogger.audit(req);
 })
 ``` 
 
@@ -50,8 +53,8 @@ If in your parse server `allowClientClassCreation`  is set to `false`, you eithe
 * If allowClientClassCreation is set to false,
 * either use masterKey to create the audit objects
 */
-const auditLogger = new AuditLogger({
-	// ...otherOptions
+AuditLogger.initialize({
+    // ...other options
 	useMasterKey:true,
 });
 	
@@ -59,8 +62,19 @@ const auditLogger = new AuditLogger({
 * Or,supply the returned schemas along with your schemas 
 * to your parse server
 */ 
-const auditLogger = newAuditLogger();
-const auditSchemas = audit.getSchemas();
+const auditSchemas = AuditLogger.schemas(...yourClassName);
+const parseServerOptions = {
+    // ...yourParseServerOptions,
+    schema:{
+        // ...yourParseServerSchemaOptions
+        definitions: [
+            // ...yourDefinitions,
+            ...auditSchemas
+        ]
+    }
+};
+
+const parse = new ParseServer(parseServerOptions);
 ```
 
 ---
@@ -71,9 +85,9 @@ The options taken by the constructor are given below
 
 | option | description | type  |
 |--|--|--|
-| onSave | Array of classes that should be audited on save.|array  |
-| onFind | Array of classes that should be audited on find. | array |
-| onDelete | Array of classes that should be audited on delete.| array|
+| onSave | Array of classes that should be audited on save |array  |
+| onFind | Array of classes that should be audited on find | array |
+| onDelete | Array of classes that should be audited on delete | array|
 | useMasterKey | Wether to use master key while saving audit objects. Defaults to `false` | boolean |
 | prefix | Prefix string to append to the schema. Defaults to `_Audit`|string  |
 | postfix | Postfix string to append to the schema | string |

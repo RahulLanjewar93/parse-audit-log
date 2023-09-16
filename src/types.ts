@@ -36,12 +36,18 @@ export type AuditLoggerOptions = {
      */
     useMasterKey?: boolean,
     /**
-     * Parse classes to audit.
-     * 
+     * Parse classes to audit on save.
+     * If this option is provided, only the classes provided in this array will be audited.
     */
-    auditClasses?: {
-        save?: string[],
-        find?: string[],
-        delete?: string[],
-    };
+    onSave?: string[],
+    /**
+     * Parse classes to audit on find.
+     * If this option is provided, only the classes provided in this array will be audited.
+    */
+    onFind?: string[],
+    /**
+     * Parse classes to audit on delete.
+     * If this option is provided, only the classes provided in this array will be audited.
+    */
+    onDelete?: string[],
 }

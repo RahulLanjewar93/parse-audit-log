@@ -3,10 +3,7 @@ import { AuditLoggerOptions } from "./types";
 
 const defaultOptions: AuditLoggerOptions = {
   prefix: "AUDIT_",
-  postfix: undefined,
   parseClient: Parse,
-  useMasterKey: false,
-  auditClasses: { find: [], save: [], delete: [] }
 }
 
 const defaultClassLevelPermissions: JSONSchema['classLevelPermissions'] = {
@@ -37,62 +34,42 @@ const defaultFields: JSONSchema['fields'] = {
   master: {
     type: 'Boolean'
   },
-  meta: {
-    type: 'Object'
-  },
   // Save/Delete
-  targetId: {
+  subject: {
+    type: 'Pointer'
+  },
+  action: {
     type: 'String',
   },
-  targetAction: {
+  class: {
     type: 'String',
-  },
-  previousState: {
-    type: 'Object'
-  },
-  currentState: {
-    type: 'Object'
-  },
-  // Find
-  query: {
-    type: 'Object'
-  },
-  queryResult: {
-    type: 'Array'
   }
 }
 
 export default class AuditLogger {
-  private options: AuditLoggerOptions;
+  private static initialized: boolean;
+  private static options: AuditLoggerOptions;
 
-  constructor(options: AuditLoggerOptions) {
+  private static validateState() {
+    if (!this.initialized) {
+      throw new Error('AuditLogger is not initialized');
+    }
+  }
+
+  private static validateOptions() {
+    // Check if parse is available.
+    if (!this.options.parseClient) {
+      throw new Error('No Parse Client found. Please initialize parse first, or provide a valid Parse client.');
+    }
+  }
+
+  public static initialize(options: AuditLoggerOptions) {
     this.options = Object.assign({}, defaultOptions, options);
     this.validateOptions();
+    this.initialized = true;
   }
 
-  /**
-   * Validates the options for the function.
-   *
-   * @return {void} - Does not return a value.
-   */
-  private validateOptions() {
-    // If allowClientClassCreation is false, inform user to register audit schemas. 
-    if (!this.options.allowClientClassCreation) {
-      console.warn('Allow client creation is false, please make sure to register audit schemas with your parse server.')
-    }
-
-    if (this.options.parseClient === undefined) {
-      throw new Error("Parse is not initialized. Please initialize Parse or provide a parse sdk")
-    }
-  }
-
-  /**
-   * Generates an array of audit schemas based on the provided class names.
-   *
-   * @param {string[]} classNames - An array of class names to generate audit schemas for.
-   * @return {JSONSchema[]} - An array of JSON schemas representing the audit schemas.
-   */
-  getAuditSchemas(classNames: string[]): JSONSchema[] {
+  public static schemas(classNames: string[]): JSONSchema[] {
     const result: JSONSchema[] = classNames.map(className => {
       return {
         className: `${this.options.prefix ?? ''}${className}${this.options.postfix ?? ''}`,
@@ -104,87 +81,92 @@ export default class AuditLogger {
     return result;
   }
 
+  public static async audit(
+    req: Parse.Cloud.BeforeFindRequest
+      | Parse.Cloud.AfterFindRequest
+      | Parse.Cloud.BeforeSaveRequest
+      | Parse.Cloud.AfterSaveRequest
+      | Parse.Cloud.BeforeDeleteRequest
+      | Parse.Cloud.AfterDeleteRequest
+  ) {
+    this.validateState();
 
-  async auditFindRequest(req: Parse.Cloud.AfterFindRequest) {
-    // @ts-ignore-next-line;
-    // Object's className
-    const objectClassName = req.query.className;
+    const auditObject = new Parse.Object('Audit')
+    const auditOptions: Record<any, any> = {}
 
-    // If the current class is not registered as audit class, do nothing.
-    if (this.options.auditClasses?.find && !this.options.auditClasses?.find.includes(objectClassName)) {
-      return;
+    // Handle find requests
+    if (req.triggerName === 'beforeFind' || req.triggerName === 'afterFind') {
+      // Handle beforeFind requests.
+      if (req.triggerName === 'beforeFind') {
+        const r = (req as Parse.Cloud.BeforeFindRequest);
+        auditOptions.action = r.isGet ? 'GET' : 'FIND';
+        auditOptions.class = r.query.className;
+
+        // If req is get and its not a or query, set the subject
+        const queryJSON = r.query.toJSON();
+        if (r.isGet && !!queryJSON.$or) {
+          auditOptions.subject = new Parse.Object(r.query.className, {
+            objectId: r.query.toJSON().where.objectId
+          });
+        }
+      }
+
+      // Handle afterFind requests
+      if (req.triggerName === 'afterFind') {
+        const r = (req as Parse.Cloud.AfterFindRequest);
+        const objectCLassName = r.objects[0]?.className;
+        auditOptions.class = objectCLassName;
+        auditOptions.action = 'FIND';
+      }
+
+
+      /**
+      * If onFind classes are provided,
+      * and if current class does not exists in the provided classes, then return.
+      */
+      if (this.options.onFind && !this.options.onFind.includes(auditOptions.class)) {
+        return;
+      }
+
     }
 
-    const auditClassName = `${this.options.prefix ?? ''}${objectClassName}${this.options.postfix ?? ''}`;
-    // @ts-ignore-next-line;
-    const auditAction = req.query.isGet ? 'GET' : 'FIND';
-    const auditObject = new this.options.parseClient.Object(auditClassName);
+    // Handle save requests
+    if (req.triggerName === 'beforeSave' || req.triggerName === 'afterSave') {
+      const r = (req as Parse.Cloud.AfterSaveRequest);
+      const objectCLassName = r.object.className;
+      auditOptions.subject = r.object;
+      auditOptions.class = objectCLassName;
+      auditOptions.action = r.original ? 'UPDATE' : 'CREATE';
 
-    auditObject.set('targetAction', auditAction);
-    auditObject.set('user', req.user);
-    auditObject.set('master', req.master);
-    //@ts-ignore-next-line
-    auditObject.set('query', req.query);
-    auditObject.set('queryResult', req.objects.map(o => o.attributes));
-
-    // Save the audit object.
-    try {
-      await auditObject.save(null, { useMasterKey: this.options.useMasterKey });
-    } catch (err) {
-      console.warn(err)
-    }
-  }
-
-  /**
-   * Async function that performs an audit save request.
-   *
-   * @param {Parse.Cloud.AfterSaveRequest} req - The request object for the save operation.
-   * @return {Promise<void>} A promise that resolves when the audit save request is complete.
-   */
-  async auditSaveRequest(req: Parse.Cloud.AfterSaveRequest) {
-    // Object's className
-    const objectClassName = req.object.className;
-
-    // If the current class is not registered as audit class, do nothing.
-    if (this.options.auditClasses?.save && !this.options.auditClasses?.save.includes(objectClassName)) {
-      return;
+      /**
+      * If onSave classes are provided,
+      * and if current class does not exists in the provided classes, then return.
+      */
+      if (this.options.onSave && !this.options.onSave.includes(req.object.className)) {
+        return;
+      }
     }
 
-    const auditClassName = `${this.options.prefix ?? ''}${objectClassName}${this.options.postfix ?? ''}`;
-    const auditAction = req.original ? 'UPDATE' : 'CREATE';
-    const auditObject = new this.options.parseClient.Object(auditClassName);
+    // Handle delete requests
+    if (req.triggerName === 'beforeDelete' || req.triggerName === 'afterDelete') {
+      const r = (req as Parse.Cloud.AfterDeleteRequest);
+      const objectCLassName = r.object.className;
+      auditOptions.subject = r.object;
+      auditOptions.class = objectCLassName;
+      auditOptions.action = 'DELETE';
 
-    auditObject.set('targetId', req.object.id);
-    auditObject.set('targetAction', auditAction);
-    auditObject.set('user', req.user);
-    auditObject.set('master', req.master);
-    auditObject.set('previousState', req.original?.attributes);
-    auditObject.set('currentState', req.object.attributes);
-
-    // Save the audit object.
-    await auditObject.save(null, { useMasterKey: this.options.useMasterKey });
-  }
-
-  async auditDeleteRequest(req: Parse.Cloud.AfterDeleteRequest) {
-    // Object's className
-    const objectClassName = req.object.className;
-
-    // If the current class is not registered as audit class, do nothing.
-    if (this.options.auditClasses?.delete && !this.options.auditClasses?.delete.includes(objectClassName)) {
-      return;
+      /**
+      * If onDelete classes are provided,
+      * and if current class does not exists in the provided classes, then return.
+      */
+      if (this.options.onSave && !this.options.onSave.includes(req.object.className)) {
+        return;
+      }
     }
 
-    const auditClassName = `${this.options.prefix ?? ''}${objectClassName}${this.options.postfix ?? ''}`;
-    const auditAction = 'DELETE';
-    const auditObject = new this.options.parseClient.Object(auditClassName);
+    auditOptions.master = req.master;
+    auditOptions.user = req.user;
 
-    auditObject.set('targetId', req.object.id);
-    auditObject.set('targetAction', auditAction);
-    auditObject.set('user', req.user);
-    auditObject.set('master', req.master);
-    auditObject.set('currentState', req.object.attributes);
-
-    // Save the audit object.
-    await auditObject.save(null, { useMasterKey: this.options.useMasterKey });
+    await auditObject.save(auditOptions, { useMasterKey: this.options.useMasterKey });
   }
 }
