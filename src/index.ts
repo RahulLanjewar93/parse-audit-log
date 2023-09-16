@@ -90,8 +90,6 @@ export default class AuditLogger {
       | Parse.Cloud.AfterDeleteRequest
   ) {
     this.validateState();
-
-    const auditObject = new Parse.Object('Audit')
     const auditOptions: Record<any, any> = {}
 
     // Handle find requests
@@ -166,7 +164,7 @@ export default class AuditLogger {
 
     auditOptions.master = req.master;
     auditOptions.user = req.user;
-
+    const auditObject = new Parse.Object(`${this.options.prefix ?? ''}${auditOptions.className}${this.options.postfix ?? ''}`);
     await auditObject.save(auditOptions, { useMasterKey: this.options.useMasterKey });
   }
 }
