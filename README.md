@@ -16,7 +16,7 @@ npm install parse-audit-logger
 ### Usage
 
 To use parse audit logger in your parse server, you need initialize the auditLogger in your entry point..
-The constructor takes various options read about the [options] (#options) .
+The constructor takes various options read about the [options](#options) .
 
 ```ts
 // src/server.ts
