@@ -56,20 +56,14 @@ export default class AuditLogger {
     }
   }
 
-  private static validateOptions() {
-    // Check if parse is available.
-    if (!this.options.parseClient) {
-      throw new Error('No Parse Client found. Please initialize parse first, or provide a valid Parse client.');
-    }
-  }
-
-  public static initialize(options: AuditLoggerOptions) {
+  public static initialize(options?: AuditLoggerOptions) {
     this.options = Object.assign({}, defaultOptions, options);
-    this.validateOptions();
     this.initialized = true;
   }
 
   public static schemas(classNames: string[]): JSONSchema[] {
+    this.validateState();
+
     const result: JSONSchema[] = classNames.map(className => {
       return {
         className: `${this.options.prefix ?? ''}${className}${this.options.postfix ?? ''}`,

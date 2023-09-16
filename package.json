@@ -1,6 +1,6 @@
 {
   "name": "parse-audit-log",
-  "version": "1.0.5",
+  "version": "1.0.4",
   "description": "Audit logger for parse server",
   "scripts": {
     "test": "echo \"Error: no test specified\"",
