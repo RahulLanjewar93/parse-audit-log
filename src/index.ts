@@ -171,6 +171,6 @@ export default class AuditLogger {
     }
 
     const auditObject = new Parse.Object(`${this.options.prefix ?? ''}${auditOptions.class}${this.options.postfix ?? ''}`);
-    await auditObject.save(auditOptions, { useMasterKey: this.options.useMasterKey });
+    await auditObject.save(auditOptions, { useMasterKey: this.options.useMasterKey, cascadeSave: false });
   }
 }
