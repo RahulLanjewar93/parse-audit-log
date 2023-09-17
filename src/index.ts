@@ -148,7 +148,7 @@ export default class AuditLogger {
     if (req.triggerName === 'beforeDelete' || req.triggerName === 'afterDelete') {
       const r = (req as Parse.Cloud.AfterDeleteRequest);
       const objectCLassName = r.object.className;
-      auditOptions.subject = r.object;
+      auditOptions.subject = r.object.toPointer();
       auditOptions.class = objectCLassName;
       auditOptions.action = 'DELETE';
 
