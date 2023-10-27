@@ -101,7 +101,7 @@ export default class AuditLogger {
 
         // If req is get and its not a or query, set the subject
         const queryJSON = r.query.toJSON();
-        if (r.isGet && !!queryJSON.$or) {
+        if (r.isGet) {
           auditOptions.subject = new Parse.Object(r.query.className, {
             objectId: r.query.toJSON().where.objectId
           });
