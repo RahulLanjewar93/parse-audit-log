@@ -99,7 +99,7 @@ export default class AuditLogger {
         auditOptions.action = r.isGet ? 'GET' : 'FIND';
         auditOptions.class = r.query.className;
 
-        // If req is get and its not a or query, set the subject
+        // If req is get set the subject
         const queryJSON = r.query.toJSON();
         if (r.isGet) {
           auditOptions.subject = new Parse.Object(r.query.className, {
