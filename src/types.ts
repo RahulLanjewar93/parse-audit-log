@@ -50,4 +50,25 @@ export type AuditLoggerOptions = {
      * If this option is provided, only the classes provided in this array will be audited.
     */
     onDelete?: string[],
+    /**
+     * Instead of creating a new class for each audit, use a single class.
+     * 
+     * When using single class, the subject is a embedded in subject.pointer
+     * @default false
+     */
+    useSingleClass?: boolean,
+    /**
+     * When use single class is enabled, you can provide the name of the class you want to set.
+     * @default AUDIT
+     */
+    singleClassName?: string,
+}
+
+export type AuditOptions = {
+    /**
+     * Store previous and current values in audit objects.
+     * The value is stored in `meta.previous` and `meta.current`
+     * @default false 
+     */
+    storeChanges?: boolean
 }
